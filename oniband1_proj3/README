@@ -1,0 +1,30 @@
+Name:		OMKAR SANJAY NIBANDHE
+B-Number:	B00625183
+Email:		oniband1@binghamton.edu
+
+Assumptions:
+-client and server run in the same directory.
+-daemon does not close the stdin, stdout, stderr.
+-File accessibility is checked on client side to reduce some load on daemon.
+-DELIMITOR is "*" which will not be present in any file name of path name. 
+-Lexicographically precedence is considered.
+-Long word still has issues, as mailed to TA previously.
+-On successfull completition, the client and workerprocess will clean up the resources created to communicate.
+-Some memory free has been done, not all.
+-"Make" will complie and create .mod file modules for dyamic loading, any other loading modules should be taken care seperately before running.
+-If any run time error happends in worker process, appropriate error message is sent to client and client is terminated along with worker processs.
+-Error condition on worker process is handled by sending 1024 bytes error message as a word with frequency set to 0.
+
+
+TO RUN:
+-simply type make in the extracted folder. The daemon will start print it's pid and wait for request.
+-Client has to be executed by the format specified in the program statement.
+-type make clean to clean FIFO (Client-Server: SERVER_FIFO)
+
+
+Data Structures:
+-Hash Table implemented for sublinear insertion.
+
+Checked on remote.cs.binghamton.edu and on LINUX environment.
+
+-------------------------------------------------------------------------------------------------------------------------------- 

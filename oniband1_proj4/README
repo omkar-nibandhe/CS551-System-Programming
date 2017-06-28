@@ -1,0 +1,68 @@
+Name:		Omkar Nibandhe	
+B-Number:	B00625183
+Email:		oniband1@binghamton.edu
+
+Assumes NUL char '\0' does not occur in words.
+
+Uses following protocol:
+
+  1.  Server changes over to DIR_NAME. Creates daemon process and 
+      creates well-known requests shared memory. And waits for request
+      on the shared memory. It also creates 2 mutex.
+
+  2.  Daemon process waits on well-known request shared memory
+      for a client request.
+
+  3.  When a client is created, it changes over to DIR_NAME specified
+      by first argument.  Client opens semaphore for synchronization 
+      and response shared memory along with 2 semaphore for synchronizing the 
+      response. a response shared memory in DIR_NAME with name based on
+      it's PID and my username /oniband1
+
+  4.  Client does a acquire server semaphore and writes its concatinated 
+      argument list to the server. client command-line args starting with module-name
+      and ending with pid.
+
+  5.  Daemon process reads client request from well-known shared memory.  It forks
+      a worker process using the double-fork technique and returns to (2). After 
+      doing operations on semaphores.
+
+  6.  Worker process opens the response shared memory and semaphore and
+      blocks till worker process signals it.
+
+  7.  Client opens response semaphore and shared memory and reads 
+      results from it, writing it on standard output in required format. 
+      Client does terminate when it gets '*' symbol on shared memory.
+ 
+
+
+Notes:
+
+-'*' is used as termination for reading by client.
+
+-when server wants to terminate the client 
+ it sends '*' on shared memory.
+
+-2 semaphores are used in client-server
+  for synchronization.
+
+-2 semaphores are used in workerprocess-client
+ for synchronizing response.
+
+-Some attempts for memory free have been done, 
+but many memory leaks are not handled.
+
+-Long word does not read, had a word with TA for the same.
+ Invested much time for learning about the reading words.
+ Cannot correct my long word code part to run it properly.
+ The logic works for small words, but fails when word size 
+ grows beyond 10000 characters. Logically implemented the transfer
+ for big word back to client. I will look into prof's code
+ soon for malloc and realloc.
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------
+ 

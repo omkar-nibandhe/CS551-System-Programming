@@ -1,0 +1,54 @@
+Name:		Omkar Nibandhe	
+B-Number:	B00625183
+Email:		oniband1@binghamton.edu
+
+Assumes NUL char '\0' does not occur in words.
+
+Uses following protocol:
+
+  1.  Server creates daemon process and opens port number specified in arg.
+      Waits for connection to recieve over the same port.
+
+  2.  When a client is created, Client opens socket on specified localhost and 
+      on specific port. Sends the request to server after basic validation.
+      and waits for results or error if any occurs.
+
+  3.  Server then reads the request over the socket and creates a thread.
+      This threads 1st logs the incoming request in the request.log with arguments
+      as specified in the project specification.
+
+  4.  This detached thread then passes arguments to worker function for preciously
+      specified word count program. And on successful completion writes back result to 
+      the clinet on the same socket and updates the request.log with the completion time
+      and time in miliseconds required to process the request.
+
+  5.  If at any point something fails, it is appropriately reported in the 
+      errors.log and the thread is killed.
+
+  6.  Upon interrupting SIGTERM signal, it is reported in the errors.log and the
+      server is killed.
+
+  7.  Similarly upon START and STOP of server, it's time is recorded with suitable
+      message to errors.log
+ 
+
+
+Notes:
+
+-Some attempts for memory free have been done, 
+but many memory leaks are not handled.
+
+-Long word still does not read.
+ 
+ The logic works for small words, but fails when word size 
+ grows beyond 10000 characters. Logically implemented the transfer
+ for big word back to client.
+
+- "|" is assumed to be DELIMITOR as well as seperator for logging function.
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------
