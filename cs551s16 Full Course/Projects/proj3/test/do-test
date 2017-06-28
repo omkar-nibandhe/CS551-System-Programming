@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#Run this file redirecting stdout and stderr to a file and examine
+#output manually
+EXEC=../word-count
+STOP=./stop-words.txt
+NOVEL=./war-and-peace.txt
+LONG=./long-word.txt
+FIFO=./fifo
+
+mkfifo $FIFO
+
+#test empty file: expect empty output
+$EXEC 5 $STOP empty.txt
+
+#test data file containing only stop words: expect empty output
+$EXEC 5 $STOP $STOP
+
+#test novel for top 500 stop words
+$EXEC 500 $STOP $NOVEL
+
+#test 10 copies of novel for top 500
+./transform-file.rb -n 10 $NOVEL >$FIFO &
+$EXEC 500 $STOP $FIFO
+
+#test long word: expect 1 word with count 10
+$EXEC 5 $STOP $LONG 
+
+#test 10 copies of long word: expect 1 word with count 10
+./transform-file.rb -n 10 $LONG >$FIFO &
+$EXEC 10 $STOP $FIFO 
+
+rm $FIFO
+
+

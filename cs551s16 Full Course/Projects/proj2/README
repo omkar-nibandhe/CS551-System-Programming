@@ -1,0 +1,11 @@
+Name:		XXX
+B-Number:	XXX
+Email:		XXX
+
+This project uses the solution to prj1 unchanged except for main.c which
+implements the project requirements.
+
+For error handling, once children have been forked, we ensure that the
+parent continues reaping child statuses even in the presence of error,
+thus attempting to clean them up.  We report results only if there has 
+not been any error.

@@ -1,0 +1,88 @@
+Name:		XXX
+B-Number:	XXX
+Email:		XXX
+
+Assumes NUL char '\0' does not occur in words.
+
+Uses following protocol:
+
+  1.  Server changes over to DIR_NAME, creates well-known requests
+      FIFO (if it does not already exist).  Creates daemon process
+      which opens requests FIFO read-write (O_RDWR is supported by
+      Linux, but not by POSIX; hence server first opens FIFO
+      O_RDONLY|O_NONBLOCK, followed by a second open O_WRONLY and then
+      removes the O_NONBLOCK from the read descriptor).
+
+  2.  Daemon process waits on well-known request FIFO for a client request.
+
+  3.  When a client is created, it changes over to DIR_NAME specified
+      by first argument (this makes it trivial to ensure that all
+      relative path-names are WRT to DIR_NAME).  Client creates (but
+      does not open) a response FIFO in DIR_NAME with name based on
+      it's PID.
+
+  4.  Client does a single write to well-known requests FIFO containing
+      following NUL-terminated strings: CLIENT PID, # of arguments which follow
+      and client command-line args starting with module-name (each
+      argument terminated by a NUL char).
+
+  5.  Daemon process reads client request from well-known FIFO.  It forks
+      a worker process using the double-fork technique and returns to (2).
+
+  6.  Worker process opens the response FIFO for writing and then
+      processes the client request. It writes results to response FIFO
+      as a count followed by a space followed by a NUL-terminated
+      word.  If an error occurs, then count is less than 0 and word is
+      the error message.  Worker process exits.
+
+  7.  Client opens response FIFO and reads results from it, writing it
+      on standard output in required format.  If it reads a count < 0,
+      then outputs word as a error message on stderr.  It terminates
+      after removing the response FIFO.
+
+Started with prj1-sol:
+
+  1.  Modified file-words.[ch] to allow specifying pointer to function
+      defining word chars instead of using fixed function.
+ 
+  2.  Renamed main.c to worker.c.  Replaced main() program with a
+      do_work() function which takes a string containing
+      NUL-terminated string arguments and writes results to a FILE
+      *stream (in format COUNT SPACE WORD NUL.  If errors occur, then
+      COUNT is negative and WORD contains error message.  Set up a 
+      test main function to test worker using a test-worker executable.
+
+      A worker.h exports the above do_work() function which
+      encompasses the main functionality of the server.  The rest of
+      the project merely involves setting up the necessary daemon
+      process and IPC with the client.
+
+  3.  Wrote word-countd.c:
+      
+      This creates a new daemon process with the usual technique,
+      using setsid() to detach from the control terminal.  When a
+      request comes in, the daemon process reads it into a buffer,
+      assuming that it will fit within PIPE_BYTES; specifically, it
+      reads a NUL-terminated PID string, followed by a NUL-terminated
+      N_ARGS string followed by N_ARGS NUL-terminated strings. It
+      spawns a worker process using the double-fork techique with the
+      daemon process returning to its main service-loop.  The worker
+      uses the client PID to open the response FIFO (which must have
+      been created earlier by the client) for writing; and calls the
+      above do_work() function exported via worker.h, passing it the
+      request buffer and a FILE stream for the response FIFO.
+
+  4.  Wrote word-count.c client program:
+
+      It creates the response FIFO with name based on its PID.  It
+      then writes its PID, argc - 2 followed by the last argc - 2
+      argv[] arguments to a buffer, each argument terminated by a
+      NUL-char (the buffer has a max size PIPE_BUF and the program
+      terminated with an error if the arguments do not fit into the
+      buffer).  It then sends this request buffer to the server via a
+      single write into the well-known requests FIFO.  It then opens
+      the response FIFO for reading and writes the response from the
+      server onto stdout in the required format (if an error is
+      indicated, it writes the error message on stderr and then
+      quits).
+

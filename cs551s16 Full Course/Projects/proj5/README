@@ -1,0 +1,35 @@
+Name:		XXX
+B-Number:	XXX
+Email:		XXX
+
+As per the requirements, the server and client both set up streaming
+sockets on the port specified on the command-line.  This is pretty
+much as discussed in class except that the client uses getaddrinfo()
+instead of gethostbyname() as the latter is considered obsolete (it is
+fine to have used gethostbyname() too).
+
+The client sends its command line arguments (starting with N)
+preceeded by their count with each argument being terminated by a NUL
+char.  It performs a half-shutdown on the socket to signal the end of
+the request to the server.
+
+The server produces output in the exact format required by the client,
+so that all the client does is copy the server's response to stdout.
+This simplifies the client but has the disadvantage that error
+messages sent by the server to the client are reported on stdout.
+
+The handling of SIGTERM is using a special signal handling thread
+which is the only thread which has signals unmasked.  On receipt of a
+SIGTERM, it cancels the main daemon thread, which cleans up resources
+using a cancellation handler.  No attempt is made to handle a
+additional SIGTERM received before the process has cleaned up fully.
+
+I did observe the issue mentioned in class about memory leaks observed
+from pthread_create(), but on an intermittent basis.  Similar problems
+are being reported on the web, but they are not conclusive.  I would
+need to look into this further to understand what is going on; in
+particular, I am suspicious of my setup for handling SIGTERM and may
+look into other alternatives if I have the time.
+
+The implementation started with prj3-sol and proceeded pretty much as
+outlined in the hints.

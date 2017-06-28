@@ -1,0 +1,82 @@
+Name:		XXX
+B-Number:	XXX
+Email:		XXX
+
+This project is built using the following modules:
+
+  arrayi::
+    Declares an ArrayI array interface.
+
+  compare-fn::
+    Prototype for a comparison function.
+
+  dynamic-array::
+    An array which can be dynamically grown as needed.  It can
+    be instantiated to have a max size; it's instantiation also
+    allows entries to be maintained in order.  The exported
+    data-structure implements the ArrayI interface.
+
+  errors::
+    Allows reporting of errors.
+
+  file-words::
+    Appends the words from a file to a word-counts data-structure.
+
+  hash-map::
+    A generic hash-map implementing the MapI interface.
+
+  heapsort::
+    A heap-sort for a ArrayI interface.
+    
+  interface::
+    A module which must be included by any interface declaration file.
+
+  linked-list-map::
+    A linked-list map implementing the MapI interface.
+
+  main::
+    Main driver program: does command-line checking and contains
+    top-level program logic.
+
+  mapi::
+    Declares an MapI map interface.
+
+  map-unit-tests::
+    Unit tests for modules which implement the MapI interface.
+
+  memalloc::
+    Wrapper which check error status of malloc() and friends.
+
+  realloc-buf::
+    A character buffer which is realloc'd as necessary.
+
+  string-hashcode::
+    Contains a function which returns a hash for a string.
+
+  string-reader::
+    Allows reading a string into a realloc-buf where legal
+    string chars are specified by a arbitrary function.
+
+  strspace::
+    Provides storage for NUL-terminated strings.
+
+  unit-test::
+    Support for unit tests.
+
+  word-count::
+    A simple word and count struct.
+
+  word-counts::
+    Tracks counts for multiple words.
+
+Most of the modules contain unit-tests.  To run the unit-tests, do
+`make unit-tests`.
+
+Functional tests are in the `tests` directory.  In that directory,
+run `./do-tests &>results.out` to run tests with stdout/stderr
+redirected to results.out.
+
+The `other-languages` directory contains implementations of this
+project in other languages.
+
+

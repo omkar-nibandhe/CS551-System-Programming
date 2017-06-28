@@ -1,0 +1,101 @@
+Name:		XXX
+B-Number:	XXX
+Email:		XXX
+
+Response is written back from server to client using char packets,
+where a packet is simply a count followed by count chars.  A packet
+with count == 0, indicates the end of the response.  
+
+The server generates the response in the exact format needed for the 
+client requirements.  Hence the client merely copies the contents
+of received packets to standard output.
+
+All the complexity of splitting the response into packets is relegated
+to the worker in worker.c.  The code uses a simple state machine to
+ensure the correctness of what would otherwise be tricky code.     
+
+Uses following protocol:
+
+  1.  Server changes over to DIR_NAME, creates well-known shm
+      segment, containing 3 anonymous anonymous binary semaphores
+      REQUEST_MEM_SEM (set to 1), HAS_REQUEST_SEM (set to 0) and
+      SEEN_REQUEST_SEM (set to 0).  Creates daemon process.
+
+  2.  Daemon process waits on HAS_REQUEST_SEM.
+
+  3.  When a client is created, it changes over to DIR_NAME specified
+      by first argument.  Client creates a private shared memory
+      segment for the response (with POSIX name containing it's PID),
+      which contains 2 anonymous semaphores HAS_RESPONSE_SEM and
+      SEEN_RESPONSE_SEM, both initialized to 0's.
+
+  4.  Client waits on REQUEST_MEM_SEM.  When successful, it writes
+      following NUL-terminated strings to well-known shm: CLIENT PID,
+      # of arguments which follow and client command-line args
+      starting with N (each argument terminated by a NUL char).  It
+      then signals HAS_REQUEST_SEM and waits on SEEN_REQUEST_SEM.
+
+  5.  Daemon process wakes up from wait on HAS_REQUEST_SEM.  It copies
+      client request from well-known shm to private memory, signals
+      SEEN_REQUEST_SEM, creates worker process using double-fork and
+      returns to (2).
+
+  6.  Worker process processes client request.  It maps the
+      client-specific response shm into its address-space.  It
+      packetizes its response as described above, writing it to the
+      private shm created by the client.  For each packet, it writes
+      out the contents of the packet and then signals the
+      HAS_RESPONSE_SEM and waits on the SEEN_RESPONSE_SEM.  When the
+      response is completed, it sends a final packet with a count ==
+      0; after the final packet has been acknowledges by the client
+      (i.e. after the wait on the SEEN_RESPONSE_SEM returns), the
+      worker detaches the the response shm and terminates.
+
+  7.  When the client returns from its wait on SEEN_REQUEST_SEM, it
+      signals REQUEST_MEM_SEM making the well-known shm available
+      for concurrent use by other clients.
+
+  8.  Client repeatedly reads response packets from client-specific
+      shm, copying contents to stdout in required format.
+      Specifically, for each packet it waits on HAS_RESPONSE_SEM; when
+      the wait returns, it copies the packet contents over to stdout
+      and then signals SEEN_RESPONSE_SEM.  
+
+      If the server signals an error by setting a error flag in the
+      packet header, then the client copies the contents of the 
+      packet (assumed to be an error message) to stderr.
+
+      The client quits after it has acknowledged a packet with count
+      == 0 and unlinks the private response shm.
+
+      Note that there is no race condition between the worker unmapping
+      the response shm and the client unlinking it, as POSIX shm semantics
+      guarantee that the shm is not removed until all processes have
+      unmapped it.
+
+Implemented as follows:
+
+  0.  Started with prj3-sol.  Removed code for dynamic modules.
+
+  1.  Defined packet structure as a DataBuffer type.  Provided utility
+      routines for writing to DataBuffer's.
+
+  2.  Replaced client-server-defs.h with common.[ch] to abstract out
+      creation of shm segments for both client and server.  Created
+      shm names, created mapped shm and initialized anonymous
+      semaphores.
+
+  3.  Modified worker.[ch] to write result packets to shm rather than
+      a FILE.  Used a state machine to packetize the results.
+
+  4.  Modified word-countd.c server to handle above protocol.
+
+  5.  Modified word-count.c client to handle above protocol.
+
+Bugs:
+
+The server detects errors in the client command-line arguments and
+reports them to the client.  However, if there is a system error in
+lower-level code, then the server will indeed detect it and the
+resulting process will terminate ungracefully.  Hopefully, this would
+be a worker process and not the main daemon process.

@@ -1,0 +1,147 @@
+#Targets:
+#  Default target: build project
+#  clean:          remove all generated files.
+#  submit:         build compress archive all project source files.
+
+PROJECT = 	prj1
+
+TARGET =	word-count
+
+SRC_FILES = \
+  arrayi.h \
+  compare-fn.h \
+  dynamic-array.c \
+  dynamic-array.h \
+  errors.c \
+  errors.h \
+  file-words.c \
+  file-words.h \
+  hash-map.c \
+  hash-map.h \
+  heapsort.c \
+  heapsort.h \
+  interfaces.h \
+  linked-list-map.c \
+  linked-list-map.h \
+  main.c \
+  mapi.h \
+  map-unit-test.c \
+  map-unit-test.h \
+  memalloc.c \
+  memalloc.h \
+  realloc-buf.c \
+  realloc-buf.h \
+  string-hashcode.c \
+  string-hashcode.h \
+  string-reader.c \
+  string-reader.h \
+  strspace.c \
+  strspace.h \
+  unit-test.c \
+  unit-test.h \
+  word-count.c \
+  word-count.h \
+  word-counts.c \
+  word-counts.h \
+  Makefile \
+  README
+
+LIB_FILES = \
+  dynamic-array.o \
+  errors.o \
+  file-words.o \
+  hash-map.o \
+  heapsort.o \
+  linked-list-map.o \
+  map-unit-test.o \
+  memalloc.o \
+  realloc-buf.o \
+  string-hashcode.o \
+  string-reader.o \
+  strspace.o \
+  unit-test.o \
+  word-counts.o \
+
+LANGS = other-languages
+
+LIB = $(PROJECT).a
+
+
+CFLAGS = -g -Wall -std=c11
+
+$(TARGET):  		main.c $(LIB)
+			$(CC) $(CFLAGS) $< $(LIB) -o $@
+
+clean:		
+			rm -f $(LIB_FILES) $(LIB) $(TARGET) *~ test-* \
+			      $(LANGS)/*~ $(LANGS)/*.class tests/*~
+
+$(LIB):			$(LIB_FILES)
+			ar rcs $@ $^
+
+submit:
+			tar -cvzf $(PROJECT).tar.gz $(SRC_FILES)
+
+UNIT_TESTS = \
+  test-file-words \
+  test-linked-list-map \
+  test-dynamic-array \
+  test-hash-map \
+  test-heapsort \
+  test-realloc-buf \
+  test-string-reader \
+  test-strspace \
+  test-word-counts \
+
+unit-tests:		$(UNIT_TESTS)
+			@FAILS='' ; \
+			for t in $^ ; \
+			do \
+			  ./$$t ; \
+			  if [ $$? -eq 0 ] ; \
+	                  then \
+	                    echo $$t ok ; \
+	                  else \
+	                    echo $$t failed ; \
+			    FAILS=" $$FAIL $$t"; \
+		          fi ; \
+			done; \
+			if [ ! -z $$FAILS ] ; \
+			then \
+			  echo ' ' ; \
+			  echo " ***** $$FAILS failed *****" ; \
+			  false ; \
+			fi
+
+
+test-file-words:	file-words.c file-words.h $(LIB)
+			$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L \
+			      -DTEST_FILE_WORDS $< $(LIB) -o $@
+
+test-linked-list-map:	linked-list-map.c linked-list-map.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_LINKED_LIST_MAP $< $(LIB) -o $@
+
+test-dynamic-array:	dynamic-array.c dynamic-array.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_DYNAMIC_ARRAY $< $(LIB) -o $@
+
+test-hash-map:		hash-map.c hash-map.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_HASH_MAP $< $(LIB) -o $@
+
+test-heapsort:		heapsort.c heapsort.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_HEAPSORT $< $(LIB) -o $@
+
+test-realloc-buf:	realloc-buf.c realloc-buf.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_REALLOC_BUF $< $(LIB) -o $@
+
+test-strspace:		strspace.c strspace.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_STRSPACE $< $(LIB) -o $@
+
+test-string-reader:	string-reader.c string-reader.h $(LIB)
+			$(CC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L \
+			      -DTEST_STRING_READER $< $(LIB) -o $@
+test-word-counts:	word-counts.c word-counts.h $(LIB)
+			$(CC) $(CFLAGS) -DTEST_WORD_COUNTS $< $(LIB) -o $@
+
+
+
+
