@@ -1,0 +1,17 @@
+Name:		OMKAR SANJAY NIBANDHE
+B-Number:	B00625183
+Email:		oniband1@binghamton.edu
+
+Assumptions:
+STOP_WORD_FILE have atleast 1 word/char i.e ' to remove single occurances of apostrophe (').
+It takes time to run the executable as the I/O operations are huge. Be a little patient.
+
+Data Structures:
+A hash table with simple hash function is used on the basis of length of the word. Then the bucket is selected to insert the word if already not present.
+ Insertion is make a bit cheaper by adding the node at the start. Resources are saved to traverse till the end while inserting.
+
+Every hash has a linked list which points the char * word and the int frequency which stores the frequency of the word.
+
+After all the words from multiple files have been included the function calculateMAX() starts to calculate the N maximum words. As each word is unique entity it is counted seperatedly so different words with same frequency are considered seperate words. Final results are stored in a linked list and displayed at the end.
+
+Checked on remote.cs.binghamton.edu 
